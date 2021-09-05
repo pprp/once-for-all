@@ -108,6 +108,7 @@ def init_models(net, model_init='he_fout'):
 		for sub_net in net:
 			init_models(sub_net, model_init)
 		return
+		
 	for m in net.modules():
 		if isinstance(m, nn.Conv2d):
 			if model_init == 'he_fout':

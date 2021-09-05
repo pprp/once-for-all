@@ -97,6 +97,9 @@ class ResNets(MyNetwork):
 	def load_state_dict(self, state_dict, **kwargs):
 		super(ResNets, self).load_state_dict(state_dict)
 
+class ResNet18(ResNets):
+	pass 
+
 
 class ResNet50(ResNets):
 

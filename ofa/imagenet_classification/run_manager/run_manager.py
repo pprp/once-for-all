@@ -22,7 +22,6 @@ __all__ = ['RunManager']
 
 
 class RunManager:
-
     def __init__(self, path, net, run_config, init=True, measure_latency=None, no_gpu=False):
         self.path = path
         self.net = net
@@ -42,10 +41,11 @@ class RunManager:
             self.device = torch.device('cpu')
         # initialize model (default)
         if init:
-            init_models(run_config.model_init)
+            init_models(net, run_config.model_init)
 
         # net info
-        net_info = get_net_info(self.net, self.run_config.data_provider.data_shape, measure_latency, True)
+        net_info = get_net_info(
+            self.net, self.run_config.data_provider.data_shape, measure_latency, True)
         with open('%s/net_info.txt' % self.path, 'w') as fout:
             fout.write(json.dumps(net_info, indent=4) + '\n')
             # noinspection PyBroadException
@@ -53,8 +53,10 @@ class RunManager:
                 fout.write(self.network.module_str + '\n')
             except Exception:
                 pass
-            fout.write('%s\n' % self.run_config.data_provider.train.dataset.transform)
-            fout.write('%s\n' % self.run_config.data_provider.test.dataset.transform)
+            fout.write('%s\n' %
+                       self.run_config.data_provider.train.dataset.transform)
+            fout.write('%s\n' %
+                       self.run_config.data_provider.test.dataset.transform)
             fout.write('%s\n' % self.network)
 
         # criterion
@@ -62,7 +64,8 @@ class RunManager:
             self.train_criterion = cross_entropy_loss_with_soft_target
         elif self.run_config.label_smoothing > 0:
             self.train_criterion = \
-                lambda pred, target: cross_entropy_with_label_smoothing(pred, target, self.run_config.label_smoothing)
+                lambda pred, target: cross_entropy_with_label_smoothing(
+                    pred, target, self.run_config.label_smoothing)
         else:
             self.train_criterion = nn.CrossEntropyLoss()
         self.test_criterion = nn.CrossEntropyLoss()
@@ -71,8 +74,10 @@ class RunManager:
         if self.run_config.no_decay_keys:
             keys = self.run_config.no_decay_keys.split('#')
             net_params = [
-                self.network.get_parameters(keys, mode='exclude'),  # parameters with weight decay
-                self.network.get_parameters(keys, mode='include'),  # parameters without weight decay
+                # parameters with weight decay
+                self.network.get_parameters(keys, mode='exclude'),
+                # parameters without weight decay
+                self.network.get_parameters(keys, mode='include'),
             ]
         else:
             # noinspection PyBroadException
@@ -121,7 +126,8 @@ class RunManager:
         if model_name is None:
             model_name = 'checkpoint.pth.tar'
 
-        checkpoint['dataset'] = self.run_config.dataset  # add `dataset` info to the checkpoint
+        # add `dataset` info to the checkpoint
+        checkpoint['dataset'] = self.run_config.dataset
         latest_fname = os.path.join(self.save_path, 'latest.txt')
         model_path = os.path.join(self.save_path, model_name)
         with open(latest_fname, 'w') as fout:
@@ -229,7 +235,8 @@ class RunManager:
             with tqdm(total=len(data_loader),
                       desc='Validate Epoch #{} {}'.format(epoch + 1, run_str), disable=no_logs) as t:
                 for i, (images, labels) in enumerate(data_loader):
-                    images, labels = images.to(self.device), labels.to(self.device)
+                    images, labels = images.to(
+                        self.device), labels.to(self.device)
                     # compute output
                     output = net(images)
                     loss = self.test_criterion(output, labels)
@@ -285,13 +292,15 @@ class RunManager:
                         self.optimizer, warmup_epochs * nBatch, nBatch, epoch, i, warmup_lr,
                     )
                 else:
-                    new_lr = self.run_config.adjust_learning_rate(self.optimizer, epoch - warmup_epochs, i, nBatch)
+                    new_lr = self.run_config.adjust_learning_rate(
+                        self.optimizer, epoch - warmup_epochs, i, nBatch)
 
                 images, labels = images.to(self.device), labels.to(self.device)
                 target = labels
                 if isinstance(self.run_config.mixup_alpha, float):
                     # transform data
-                    lam = random.betavariate(self.run_config.mixup_alpha, self.run_config.mixup_alpha)
+                    lam = random.betavariate(
+                        self.run_config.mixup_alpha, self.run_config.mixup_alpha)
                     images = mix_images(images, lam)
                     labels = mix_labels(
                         labels, lam, self.run_config.data_provider.n_classes, self.run_config.label_smoothing
@@ -312,7 +321,8 @@ class RunManager:
                     loss_type = 'ce'
                 else:
                     if args.kd_type == 'ce':
-                        kd_loss = cross_entropy_loss_with_soft_target(output, soft_label)
+                        kd_loss = cross_entropy_loss_with_soft_target(
+                            output, soft_label)
                     else:
                         kd_loss = F.mse_loss(output, soft_logits)
                     loss = args.kd_ratio * kd_loss + loss
@@ -341,10 +351,12 @@ class RunManager:
 
     def train(self, args, warmup_epoch=0, warmup_lr=0):
         for epoch in range(self.start_epoch, self.run_config.n_epochs + warmup_epoch):
-            train_loss, (train_top1, train_top5) = self.train_one_epoch(args, epoch, warmup_epoch, warmup_lr)
+            train_loss, (train_top1, train_top5) = self.train_one_epoch(
+                args, epoch, warmup_epoch, warmup_lr)
 
             if (epoch + 1) % self.run_config.validation_frequency == 0:
-                img_size, val_loss, val_acc, val_acc5 = self.validate_all_resolution(epoch=epoch, is_test=False)
+                img_size, val_loss, val_acc, val_acc5 = self.validate_all_resolution(
+                    epoch=epoch, is_test=False)
 
                 is_best = np.mean(val_acc) > self.best_acc
                 self.best_acc = max(self.best_acc, np.mean(val_acc))
@@ -352,7 +364,8 @@ class RunManager:
                     format(epoch + 1 - warmup_epoch, self.run_config.n_epochs,
                            np.mean(val_loss), np.mean(val_acc), self.best_acc, self.get_metric_names()[0])
                 val_log += '\t{2} {0:.3f}\tTrain {1} {top1:.3f}\tloss {train_loss:.3f}\t'. \
-                    format(np.mean(val_acc5), *self.get_metric_names(), top1=train_top1, train_loss=train_loss)
+                    format(np.mean(val_acc5), *self.get_metric_names(),
+                           top1=train_top1, train_loss=train_loss)
                 for i_s, v_a in zip(img_size, val_acc):
                     val_log += '(%d, %.3f), ' % (i_s, v_a)
                 self.write_log(val_log, prefix='valid', should_print=False)
@@ -371,5 +384,6 @@ class RunManager:
         if net is None:
             net = self.network
         if data_loader is None:
-            data_loader = self.run_config.random_sub_train_loader(subset_size, subset_batch_size)
+            data_loader = self.run_config.random_sub_train_loader(
+                subset_size, subset_batch_size)
         set_running_statistics(net, data_loader)

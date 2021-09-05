@@ -10,8 +10,7 @@ __all__ = ['OFAResNets']
 
 
 class OFAResNets(ResNets):
-
-	def __init__(self, n_classes=1000, bn_param=(0.1, 1e-5), dropout_rate=0,
+	def __init__(self, n_classes=10, bn_param=(0.1, 1e-5), dropout_rate=0,
 	             depth_list=2, expand_ratio_list=0.25, width_mult_list=1.0):
 
 		self.depth_list = val2list(depth_list)

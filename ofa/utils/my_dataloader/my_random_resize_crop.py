@@ -34,6 +34,7 @@ class MyRandomResizedCrop(transforms.RandomResizedCrop):
 		if not isinstance(size, int):
 			size = size[0]
 		super(MyRandomResizedCrop, self).__init__(size, scale, ratio, interpolation)
+		self.interpolation = interpolation
 
 	def __call__(self, img):
 		i, j, h, w = self.get_params(img, self.scale, self.ratio)
@@ -84,7 +85,7 @@ class MyResizeRandomCrop(object):
 	def __init__(self, interpolation=Image.BILINEAR,
 	             use_padding=False, pad_if_needed=False, fill=0, padding_mode='constant'):
 		# resize
-		self.interpolation = interpolation
+		self.interpolation = Image.BILINEAR
 		# random crop
 		self.use_padding = use_padding
 		self.pad_if_needed = pad_if_needed
