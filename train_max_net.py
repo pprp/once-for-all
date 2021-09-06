@@ -85,21 +85,21 @@ elif args.task == 'expand':
         args.depth_list = '2,3'
 elif args.task == "max":
     args.path = 'exp/teachernet'
-    args.dynamic_batch_size = 4
-    args.n_epochs = 120
-    args.base_lr = 2.5e-3
+    args.dynamic_batch_size = 1
+    args.n_epochs = 200
+    args.base_lr = 0.1
     args.warmup_epochs = 5
     args.warmup_lr = -1
-    args.ks_list = '3,5'  # 原3 5 7
-    args.expand_list = '2,4'
-    args.depth_list = '2,3'
+    args.ks_list = '5'
+    args.expand_list = '4'
+    args.depth_list = '3'
 else:
     raise NotImplementedError
 args.manual_seed = 0
 
 args.lr_schedule_type = 'cosine'
 
-args.base_batch_size = 64
+args.base_batch_size = 128
 args.valid_size = 10000
 
 args.opt_type = 'sgd'
@@ -114,10 +114,10 @@ args.model_init = 'he_fout'
 args.validation_frequency = 1
 args.print_frequency = 10
 
-args.n_worker = 4
+args.n_worker = 8
 args.resize_scale = 0.08
 args.distort_color = 'tf'
-args.image_size = '24,32'
+args.image_size = '32'
 args.continuous_size = True
 args.not_sync_distributed_image_size = False
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         'momentum': args.momentum,
         'nesterov': not args.no_nesterov,
     }
-    args.init_lr = args.base_lr * num_gpus  # linearly rescale the learning rate
+    args.init_lr = args.base_lr   # linearly rescale the learning rate
     if args.warmup_lr < 0:
         args.warmup_lr = args.base_lr
 
@@ -226,8 +226,6 @@ if __name__ == '__main__':
                           'ks_list': sorted({min(args.ks_list), max(args.ks_list)}),
                           'expand_ratio_list': sorted({min(args.expand_list), max(args.expand_list)}),
                           'depth_list': sorted({min(net.depth_list), max(net.depth_list)})}
-
-   
 
     train_max(run_manager, args,
             lambda _run_manager, epoch, is_test: validate(_run_manager, epoch, is_test, **validate_func_dict))

@@ -53,6 +53,7 @@ class RunConfig:
         """ adjust learning of a given optimizer and return the new learning rate """
         new_lr = calc_learning_rate(
             epoch, self.init_lr, self.n_epochs, batch, nBatch, self.lr_schedule_type)
+            
         for param_group in optimizer.param_groups:
             param_group['lr'] = new_lr
         return new_lr

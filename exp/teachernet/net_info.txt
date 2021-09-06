@@ -1,5 +1,5 @@
 {
-    "params": 4.027582,
+    "params": 4.025962,
     "flops": 1.608192
 }
 3x3_Conv_O16_H_SWISH_BN
@@ -29,7 +29,7 @@
 1280x10_Linear
 
 Compose(
-    MyRandomResizedCrop(size=[24, 32]@continuous, scale=(0.08, 1.0), ratio=(0.75, 1.3333), interpolation=PIL.Image.BILINEAR)
+    RandomResizedCrop(size=(32, 32), scale=(0.08, 1.0), ratio=(0.75, 1.3333), interpolation=bilinear)
     RandomHorizontalFlip(p=0.5)
     ColorJitter(brightness=[0.8745098039215686, 1.1254901960784314], contrast=None, saturation=[0.5, 1.5], hue=None)
     ToTensor()

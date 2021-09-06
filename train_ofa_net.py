@@ -155,7 +155,7 @@ if __name__ == '__main__':
         'momentum': args.momentum,
         'nesterov': not args.no_nesterov,
     }
-    args.init_lr = args.base_lr * num_gpus  # linearly rescale the learning rate
+    args.init_lr = args.base_lr   # linearly rescale the learning rate
     if args.warmup_lr < 0:
         args.warmup_lr = args.base_lr
 

@@ -12,10 +12,9 @@ from ofa.utils import make_divisible, val2list, MyNetwork
 
 __all__ = ['OFAMobileNetV3']
 
-
 class OFAMobileNetV3(MobileNetV3):
 
-	def __init__(self, n_classes=1000, bn_param=(0.1, 1e-5), dropout_rate=0.1, base_stage_width=None, width_mult=1.0,
+	def __init__(self, n_classes=10, bn_param=(0.1, 1e-5), dropout_rate=0.1, base_stage_width=None, width_mult=1.0,
 	             ks_list=3, expand_ratio_list=6, depth_list=4):
 
 		self.width_mult = width_mult
